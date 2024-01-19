@@ -95,7 +95,7 @@ public class GridManagerScript : MonoBehaviour
 
     private void InstantiateTile(GridPosition pos, int spriteValue)
     {
-        gridValues[pos] = (int)Pow(2, spriteValue);
+        gridValues[pos] = spriteValue;
         GameObject newTile = Instantiate(tilePrefab);
         TileScript newTileScript = newTile.GetComponent<TileScript>();
         newTileScript.Initiation();

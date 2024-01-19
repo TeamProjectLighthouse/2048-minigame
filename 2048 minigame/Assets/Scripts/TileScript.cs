@@ -15,6 +15,26 @@ public class TileScript : MonoBehaviour
             column = y;
         }
 
+        public static bool operator ==(GridPosition pos1, GridPosition pos2)
+        {
+            if (ReferenceEquals(pos1, pos2))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(pos1, null) || ReferenceEquals(pos2, null))
+            {
+                return false;
+            }
+
+            return pos1.row == pos2.row && pos1.column == pos2.column;
+        }
+
+        public static bool operator !=(GridPosition pos1, GridPosition pos2)
+        {
+            return !(pos1 == pos2);
+        }
+
         public override bool Equals(object obj)
         {
             if (obj == null || GetType() != obj.GetType())
@@ -35,6 +55,12 @@ public class TileScript : MonoBehaviour
                 hash = hash * 23 + column.GetHashCode();
                 return hash;
             }
+        }
+
+        public List<int> GetGridPosition()
+        {
+            List<int> posList = new List<int> {row, column};
+            return posList;
         }
     }
     public GameObject tileTextureDatabasePrefab;
