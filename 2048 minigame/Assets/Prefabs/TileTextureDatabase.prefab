@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &110272753616456149
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3670816211093545167}
+  - component: {fileID: 2302533696305278305}
+  m_Layer: 0
+  m_Name: TileTextureDatabase
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3670816211093545167
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 110272753616456149}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2302533696305278305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 110272753616456149}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 449164f26c8ea1740bd4e4e509f31dff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tile2: {fileID: 21300000, guid: 3e04e45536dbde74687adf4980544477, type: 3}
+  tile4: {fileID: 21300000, guid: c4fcf8a84fa7f334d8f97f2e69ca21bc, type: 3}
+  tile8: {fileID: 21300000, guid: 5ceebaa1f9b4d704eb83dcff01fe44da, type: 3}
+  tile16: {fileID: 21300000, guid: f4267085ca82b144995c1cb69ef18bbf, type: 3}
+  tile32: {fileID: 21300000, guid: cf1ef173de4eeac4d89aeb07de8f8777, type: 3}
+  tile64: {fileID: 21300000, guid: 02511a8f656cb4749bec87ae9c7296c0, type: 3}
+  tile128: {fileID: 21300000, guid: 0123a4fb2070d5a49a9aa7fbdf7bec1a, type: 3}
+  tile256: {fileID: 21300000, guid: 24868d560167ce2448395ec36bca77bf, type: 3}
+  tile512: {fileID: 21300000, guid: 24c0eefd59abe5240bace5eca018dc38, type: 3}
+  tile1024: {fileID: 21300000, guid: 0c59a363d09d9e64ebc0fd3dadf1d5c3, type: 3}
+  tile2048: {fileID: 21300000, guid: b4a6843ffcba1664a99c73671a983489, type: 3}
