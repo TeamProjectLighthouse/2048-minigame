@@ -96,6 +96,18 @@ public class GridManagerScript : MonoBehaviour
         return vector3Pos;
     }
 
+
+    public GridPosition Vector3ToGridPosition(Vector3 vector3)
+    {
+        Vector3 firstPos = new Vector3(-1.8f, 1.8f);
+        float x = vector3.x;
+        float y = vector3.y;
+        int gridX = (int)((y - firstPos.y) / -1.2f + 1);
+        int gridY = (int)((x - firstPos.x) / 1.2f + 1);
+        GridManagerScript.GridPosition finalPos = new GridManagerScript.GridPosition(gridX, gridY);
+        return finalPos;
+    }
+
     private void InstantiateTile(GridPosition pos, int spriteValue)
     {
         gridValues[pos] = spriteValue;
@@ -145,22 +157,22 @@ public class GridManagerScript : MonoBehaviour
             if (upPressed)
             {
                 Debug.Log("up");
-                MoveTiles(Direction.Up, 0, 1, 1, 1);
+                MoveTiles(Direction.Up, 1, 1, 1, 1);
                 return Direction.Up;
                 
             } else if (downPressed) {
                 Debug.Log("down");
-                MoveTiles(Direction.Down, 0, 1, 2, -1);
+                MoveTiles(Direction.Down, 4, -1, 1, 1);
                 return Direction.Down;
                 
             } else if (leftPressed) {
                 Debug.Log("left");
-                MoveTiles(Direction.Left, 1, 1, 0, 1);
+                MoveTiles(Direction.Left, 1, 1, 1, 1);
                 return Direction.Left;
                 
             } else if (rightPressed) {
                 Debug.Log("right");
-                MoveTiles(Direction.Right, 2, -1, 0, 1);
+                MoveTiles(Direction.Right, 1, 1, 4, -1);
                 return Direction.Right;
                 
             } else {
@@ -172,7 +184,7 @@ public class GridManagerScript : MonoBehaviour
         return Direction.None;
     }
 
-    private void MoveTiles(Direction direction,int startX, int incrementX, int startY, int incrementY)
+    private void MoveTiles(Direction direction,int startRow, int incrementRow, int startColumn, int incrementColumn)
     {
         Debug.Log(tiles);
         //foreach(var x in gridTiles.Values)
@@ -180,20 +192,37 @@ public class GridManagerScript : MonoBehaviour
         //    x.GetComponent<TileScript>().Merge(direction);
         //}
 
-        for (int x = startX; x >= 0 && x < 4; x += incrementX)
+        for (int x = startRow; x >= 1 && x <= 4; x += incrementRow)
         {
-            for (int y = startY; y >= 0 && y < 4; y += incrementY)
+            for (int y = startColumn; y >= 1 && y <= 4; y += incrementColumn)
             {
                 if (HasTile(x, y)) 
                 {
                     GameObject tile = GetTile(x, y);
                     GridPosition pos = new GridPosition(x, y);
                     TileScript script = tile.GetComponent<TileScript>();
-                    script.MoveTile(pos, direction);
-                    Debug.Log($"Moving {tile} in {direction} direction");
+                    Debug.Log($"Moving tile at ({pos.GetGridPosition()[0]}, {pos.GetGridPosition()[1]}) in {direction} direction");
+                    GridPosition newGridPos = script.MoveTile(pos, direction);
+                    Debug.Log($"{newGridPos.row}, {newGridPos.column}");
+                    //gridTiles.Remove(pos);
+                    //gridTiles[newGridPos] = tile;
                 }
             }
         }
+
+        
+        Dictionary<GridPosition, GameObject> newGridTiles = new Dictionary<GridPosition, GameObject>();
+        foreach (KeyValuePair<GridPosition, GameObject> kvp in gridTiles)
+        {
+            GridPosition oldGridPos = kvp.Key;
+            GameObject tile = kvp.Value;
+            Vector3 newVectorPos = tile.transform.position;
+            GridPosition newGridPos = Vector3ToGridPosition(newVectorPos);
+            newGridTiles[newGridPos] = tile;
+            Debug.Log($"Tile originally at ({oldGridPos.row}, {oldGridPos.column}) updated to ({newGridPos.row}, {newGridPos.column})");
+        }
+        gridTiles = newGridTiles;
+        
     }
 
     public bool HasTile(int x, int y)

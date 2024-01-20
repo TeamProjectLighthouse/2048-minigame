@@ -4,72 +4,13 @@ using UnityEngine;
 
 public class TileScript : MonoBehaviour
 {
-    public class GridPosition
-    {
-        public int row { get; set; }
-        public int column { get; set; }
-
-        public GridPosition(int x, int y)
-        {
-            row = x;
-            column = y;
-        }
-
-        public static bool operator ==(GridPosition pos1, GridPosition pos2)
-        {
-            if (ReferenceEquals(pos1, pos2))
-            {
-                return true;
-            }
-
-            if (ReferenceEquals(pos1, null) || ReferenceEquals(pos2, null))
-            {
-                return false;
-            }
-
-            return pos1.row == pos2.row && pos1.column == pos2.column;
-        }
-
-        public static bool operator !=(GridPosition pos1, GridPosition pos2)
-        {
-            return !(pos1 == pos2);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-            {
-                return false;
-            }
-
-            GridPosition other = (GridPosition)obj;
-            return row == other.row && column == other.column;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                int hash = 17;
-                hash = hash * 23 + row.GetHashCode();
-                hash = hash * 23 + column.GetHashCode();
-                return hash;
-            }
-        }
-
-        public List<int> GetGridPosition()
-        {
-            List<int> posList = new List<int> {row, column};
-            return posList;
-        }
-    }
 
     private GameObject grid;
     public GameObject tileTextureDatabasePrefab;
     TileTextureDatabaseScript tileTextureDatabase;
     List<Sprite> tileSpriteList;
 
-    GridPosition gridCoords;
+    GridManagerScript.GridPosition gridCoords;
     GridManagerScript gridScript;
 
     void Start()
@@ -94,60 +35,76 @@ public class TileScript : MonoBehaviour
         spriteRenderer.sprite = tileSpriteList[spriteValue-1];
     }
 
-    public void MoveTile(GridManagerScript.GridPosition tile, GridManagerScript.Direction direction)
+    public GridManagerScript.GridPosition MoveTile(GridManagerScript.GridPosition tile, GridManagerScript.Direction direction)
     {
         GridManagerScript.GridPosition newTile = UpdateTilePos(tile, direction);
+        
         transform.position = gridScript.GridPositionToVector3(newTile);
+        return newTile;
     }
 
     private GridManagerScript.GridPosition UpdateTilePos(GridManagerScript.GridPosition newTile, GridManagerScript.Direction direction)
     {
-        while (!gridScript.HasTile(newTile.column, newTile.row))
+        GridManagerScript.GridPosition lastCheckedTile = new GridManagerScript.GridPosition(newTile.row, newTile.column);
+        if (direction == GridManagerScript.Direction.Up)
         {
+            newTile.row -= 1;
+        }
+        else if (direction == GridManagerScript.Direction.Down)
+        {
+            newTile.row += 1;
+        }
+        else if (direction == GridManagerScript.Direction.Left)
+        {
+            newTile.column -= 1;
+        }
+        else if (direction == GridManagerScript.Direction.Right)
+        {
+            newTile.column += 1;
+        }
+
+
+        while (!gridScript.HasTile(newTile.row, newTile.column) && IsWithinGridBounds(newTile))
+        {
+            if (!IsWithinGridBounds(newTile) || gridScript.HasTile(newTile.row, newTile.column))
+            {
+                break;
+            }
+            //Debug.Log($"checking ({newTile.row}, {newTile.column})");
+            lastCheckedTile = new GridManagerScript.GridPosition(newTile.row, newTile.column);
             if (direction == GridManagerScript.Direction.Up)
             {
                 newTile.row -= 1;
+
             }
             else if (direction == GridManagerScript.Direction.Down)
             {
                 newTile.row += 1;
+
             }
             else if (direction == GridManagerScript.Direction.Left)
             {
                 newTile.column -= 1;
+
             }
             else if (direction == GridManagerScript.Direction.Right)
             {
                 newTile.column += 1;
+
             }
 
-            // Check if newTile is within grid bounds
-            if (!IsWithinGridBounds(newTile))
-            {
-                break;
-            }
 
-            Debug.Log($"{newTile.column}, {newTile.row}");
+
         }
-
-        return newTile;
+        Debug.Log($"Final tile: ({lastCheckedTile.row}, {lastCheckedTile.column})");
+        return lastCheckedTile;
     }
 
     private bool IsWithinGridBounds(GridManagerScript.GridPosition position)
     {
-        return position.row >= 0 && position.row < 4 && position.column >= 0 && position.column < 4;
+        return position.row >= 1 && position.row <= 4 && position.column >= 1 && position.column <= 4;
     }
 
-    //public GridManagerScript.GridPosition Vector3ToGridPosition(Vector3 vector3)
-    //{
-    //    Vector3 firstPos = new Vector3(1.8f, 1.8f);
-    //    float x = vector3.x;
-    //    float y = vector3.y;
-    //    int gridX = (int)((y - firstPos.y) / 1.2f + 1);
-    //    int gridY = (int)((x - firstPos.x) / 1.2f + 1);
-    //    GridManagerScript.GridPosition finalPos = new GridManagerScript.GridPosition(gridX, gridY);
-    //    return finalPos;
-    //}
 
     //public void Merge(GridManagerScript.Direction direction)
     //{
