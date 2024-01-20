@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static System.Math;
 using System;
+
 public class GridManagerScript : MonoBehaviour
 {
 
@@ -67,9 +68,11 @@ public class GridManagerScript : MonoBehaviour
     }
     public GameObject tilePrefab;
     public GameObject tileTextureDatabasePrefab;
-    Dictionary<GridPosition, int> gridValues = new Dictionary<GridPosition, int>();
-    Dictionary<GridPosition, GameObject> gridTiles = new Dictionary<GridPosition, GameObject>();
+    public Dictionary<GridPosition, int> gridValues = new Dictionary<GridPosition, int>();
+    public Dictionary<GridPosition, GameObject> gridTiles = new Dictionary<GridPosition, GameObject>();
 
+
+    private TileScript[] tiles;
 
     private void StartGame()
     {
@@ -82,14 +85,14 @@ public class GridManagerScript : MonoBehaviour
 
         InstantiateTile(randomPos1, 1);
         InstantiateTile(randomPos2, 1);
-             
-        
+
+        tiles = GetComponents<TileScript>();
     }
 
-    private Vector3 GridPositionToVector3(GridPosition pos)
+    public Vector3 GridPositionToVector3(GridPosition pos)
     {
         List<int> gridPos = pos.GetGridPosition();
-        Vector3 vector3Pos = new Vector3((-1.8f + (gridPos[0] - 1) * 1.2f), (1.8f - (gridPos[1] - 1) * 1.2f), 0);
+        Vector3 vector3Pos = new Vector3((-1.8f + (gridPos[1] - 1) * 1.2f), (1.8f - (gridPos[0] - 1) * 1.2f), 0);
         return vector3Pos;
     }
 
@@ -105,7 +108,7 @@ public class GridManagerScript : MonoBehaviour
         Debug.Log($"New tile with value of {(int)Pow(2, spriteValue)} (spriteValue of {spriteValue}) instantiated at {GridPositionToVector3(pos)} (gridPosition: {pos.GetGridPosition()[0]}, {pos.GetGridPosition()[1]})");
     }
 
-    private enum Direction
+    public enum Direction
     {
         Up,
         Down,
@@ -142,18 +145,22 @@ public class GridManagerScript : MonoBehaviour
             if (upPressed)
             {
                 Debug.Log("up");
+                MoveTiles(Direction.Up, 0, 1, 1, 1);
                 return Direction.Up;
                 
             } else if (downPressed) {
                 Debug.Log("down");
+                MoveTiles(Direction.Down, 0, 1, 2, -1);
                 return Direction.Down;
                 
             } else if (leftPressed) {
                 Debug.Log("left");
+                MoveTiles(Direction.Left, 1, 1, 0, 1);
                 return Direction.Left;
                 
             } else if (rightPressed) {
                 Debug.Log("right");
+                MoveTiles(Direction.Right, 2, -1, 0, 1);
                 return Direction.Right;
                 
             } else {
@@ -165,6 +172,41 @@ public class GridManagerScript : MonoBehaviour
         return Direction.None;
     }
 
+    private void MoveTiles(Direction direction,int startX, int incrementX, int startY, int incrementY)
+    {
+        Debug.Log(tiles);
+        //foreach(var x in gridTiles.Values)
+        //{
+        //    x.GetComponent<TileScript>().Merge(direction);
+        //}
+
+        for (int x = startX; x >= 0 && x < 4; x += incrementX)
+        {
+            for (int y = startY; y >= 0 && y < 4; y += incrementY)
+            {
+                if (HasTile(x, y)) 
+                {
+                    GameObject tile = GetTile(x, y);
+                    GridPosition pos = new GridPosition(x, y);
+                    TileScript script = tile.GetComponent<TileScript>();
+                    script.MoveTile(pos, direction);
+                    Debug.Log($"Moving {tile} in {direction} direction");
+                }
+            }
+        }
+    }
+
+    public bool HasTile(int x, int y)
+    {
+        return gridTiles.ContainsKey(new GridPosition(x,y));
+    }
+
+    private GameObject GetTile(int x, int y)
+    {
+        var position = new GridPosition(x, y);
+        return gridTiles[position];
+    }
+
     void Start()
     {
         StartGame();
@@ -173,6 +215,5 @@ public class GridManagerScript : MonoBehaviour
     void Update()
     {
         Direction inputDirection = DetectInput();
-
     }
 }

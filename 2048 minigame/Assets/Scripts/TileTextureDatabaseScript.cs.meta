@@ -3,7 +3,18 @@ guid: 449164f26c8ea1740bd4e4e509f31dff
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - tile2: {fileID: 21300000, guid: 3e04e45536dbde74687adf4980544477, type: 3}
+  - tile4: {fileID: 21300000, guid: c4fcf8a84fa7f334d8f97f2e69ca21bc, type: 3}
+  - tile8: {fileID: 21300000, guid: 5ceebaa1f9b4d704eb83dcff01fe44da, type: 3}
+  - tile16: {fileID: 21300000, guid: f4267085ca82b144995c1cb69ef18bbf, type: 3}
+  - tile32: {fileID: 21300000, guid: cf1ef173de4eeac4d89aeb07de8f8777, type: 3}
+  - tile64: {fileID: 21300000, guid: 02511a8f656cb4749bec87ae9c7296c0, type: 3}
+  - tile128: {fileID: 21300000, guid: 0123a4fb2070d5a49a9aa7fbdf7bec1a, type: 3}
+  - tile256: {fileID: 21300000, guid: 24868d560167ce2448395ec36bca77bf, type: 3}
+  - tile512: {fileID: 21300000, guid: 24c0eefd59abe5240bace5eca018dc38, type: 3}
+  - tile1024: {fileID: 21300000, guid: 0c59a363d09d9e64ebc0fd3dadf1d5c3, type: 3}
+  - tile2048: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
