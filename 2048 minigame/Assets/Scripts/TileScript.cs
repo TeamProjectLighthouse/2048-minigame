@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class TileScript : MonoBehaviour
 {
@@ -37,15 +38,42 @@ public class TileScript : MonoBehaviour
 
     public GridManagerScript.GridPosition MoveTile(GridManagerScript.GridPosition tile, GridManagerScript.Direction direction)
     {
+        GridManagerScript.GridPosition oldTile = new GridManagerScript.GridPosition(tile.row, tile.column);
         GridManagerScript.GridPosition newTile = UpdateTilePos(tile, direction);
-        
-        transform.position = gridScript.GridPositionToVector3(newTile);
+
+        StartCoroutine(Animate(gridScript.GridPositionToVector3(newTile)));
+
+        gridScript.UpdateGridTiles(newTile, oldTile);
+
+        Debug.Log($"Moved tile from ({oldTile.row},{oldTile.column}) to ({newTile.row},{newTile.column})");
+
         return newTile;
     }
 
     private GridManagerScript.GridPosition UpdateTilePos(GridManagerScript.GridPosition newTile, GridManagerScript.Direction direction)
     {
         GridManagerScript.GridPosition lastCheckedTile = new GridManagerScript.GridPosition(newTile.row, newTile.column);
+        MoveTileInGridTile(newTile, direction);
+
+        while (!gridScript.HasTile(newTile.row, newTile.column) && IsWithinGridBounds(newTile))
+        {
+            if (!IsWithinGridBounds(newTile) || gridScript.HasTile(newTile.row, newTile.column))
+            {
+                break;
+            }
+            lastCheckedTile = new GridManagerScript.GridPosition(newTile.row, newTile.column);
+            MoveTileInGridTile(newTile, direction);
+        }
+        return lastCheckedTile;
+    }
+
+    private bool IsWithinGridBounds(GridManagerScript.GridPosition position)
+    {
+        return position.row >= 1 && position.row <= 4 && position.column >= 1 && position.column <= 4;
+    }
+
+    private void MoveTileInGridTile(GridManagerScript.GridPosition newTile, GridManagerScript.Direction direction)
+    {
         if (direction == GridManagerScript.Direction.Up)
         {
             newTile.row -= 1;
@@ -62,82 +90,22 @@ public class TileScript : MonoBehaviour
         {
             newTile.column += 1;
         }
+    }
 
+    private IEnumerator Animate(Vector3 to)
+    {
+        float elapsed = 0f;
+        float duration = 0.1f;
 
-        while (!gridScript.HasTile(newTile.row, newTile.column) && IsWithinGridBounds(newTile))
+        Vector3 from = transform.position;
+
+        while (elapsed < duration)
         {
-            if (!IsWithinGridBounds(newTile) || gridScript.HasTile(newTile.row, newTile.column))
-            {
-                break;
-            }
-            //Debug.Log($"checking ({newTile.row}, {newTile.column})");
-            lastCheckedTile = new GridManagerScript.GridPosition(newTile.row, newTile.column);
-            if (direction == GridManagerScript.Direction.Up)
-            {
-                newTile.row -= 1;
-
-            }
-            else if (direction == GridManagerScript.Direction.Down)
-            {
-                newTile.row += 1;
-
-            }
-            else if (direction == GridManagerScript.Direction.Left)
-            {
-                newTile.column -= 1;
-
-            }
-            else if (direction == GridManagerScript.Direction.Right)
-            {
-                newTile.column += 1;
-
-            }
-
-
-
+            transform.position = Vector3.Lerp(from, to, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
         }
-        Debug.Log($"Final tile: ({lastCheckedTile.row}, {lastCheckedTile.column})");
-        return lastCheckedTile;
+
+        transform.position = to;
     }
-
-    private bool IsWithinGridBounds(GridManagerScript.GridPosition position)
-    {
-        return position.row >= 1 && position.row <= 4 && position.column >= 1 && position.column <= 4;
-    }
-
-
-    //public void Merge(GridManagerScript.Direction direction)
-    //{
-    //    Debug.Log("ok");
-    //    GridManagerScript.GridPosition gridPosition = Vector3ToGridPosition(transform.position);
-    //    Debug.Log(gridPosition.row);
-    //    TileScript adjacent = FindAdjacent(gridPosition, direction);
-    //}
-
-    //private TileScript FindAdjacent(GridManagerScript.GridPosition tile, GridManagerScript.Direction direction)
-    //{
-    //    //if (direction == GridManagerScript.Direction.Right)
-    //    //{
-    //        List<GridManagerScript.GridPosition> sameRow;
-    //        sameRow = new List<GridManagerScript.GridPosition>();
-
-    //    foreach (var pos in grid.gridTiles.Keys)
-    //    {
-    //        if (tile.row == pos.row)
-    //        {
-    //            sameRow.Add(pos);
-    //        }
-    //    }
-    //    Debug.Log(sameRow);
-
-    //        return null;    
-    //   // }
-    //}
-
-
-    // Update is called once per frame
-    /*void Update()
-    {
-        
-     } */
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static System.Math;
 using System;
+using System.Linq;
 
 public class GridManagerScript : MonoBehaviour
 {
@@ -156,22 +157,18 @@ public class GridManagerScript : MonoBehaviour
         {
             if (upPressed)
             {
-                Debug.Log("up");
-                MoveTiles(Direction.Up, 1, 1, 1, 1);
+                MoveTiles(Direction.Up, 4, -1, 1, 1);
                 return Direction.Up;
                 
             } else if (downPressed) {
-                Debug.Log("down");
-                MoveTiles(Direction.Down, 4, -1, 1, 1);
+                MoveTiles(Direction.Down, 1, 1, 1, 1);
                 return Direction.Down;
                 
             } else if (leftPressed) {
-                Debug.Log("left");
                 MoveTiles(Direction.Left, 1, 1, 1, 1);
                 return Direction.Left;
                 
             } else if (rightPressed) {
-                Debug.Log("right");
                 MoveTiles(Direction.Right, 1, 1, 4, -1);
                 return Direction.Right;
                 
@@ -184,9 +181,9 @@ public class GridManagerScript : MonoBehaviour
         return Direction.None;
     }
 
-    private void MoveTiles(Direction direction,int startRow, int incrementRow, int startColumn, int incrementColumn)
+    private void MoveTiles(Direction direction, int startRow, int incrementRow, int startColumn, int incrementColumn)
     {
-        Debug.Log(tiles);
+        //Debug.Log(tiles);
         //foreach(var x in gridTiles.Values)
         //{
         //    x.GetComponent<TileScript>().Merge(direction);
@@ -202,27 +199,34 @@ public class GridManagerScript : MonoBehaviour
                     GridPosition pos = new GridPosition(x, y);
                     TileScript script = tile.GetComponent<TileScript>();
                     Debug.Log($"Moving tile at ({pos.GetGridPosition()[0]}, {pos.GetGridPosition()[1]}) in {direction} direction");
-                    GridPosition newGridPos = script.MoveTile(pos, direction);
-                    Debug.Log($"{newGridPos.row}, {newGridPos.column}");
+                    script.MoveTile(pos, direction);
+                    //Debug.Log($"{newGridPos.row}, {newGridPos.column}");
                     //gridTiles.Remove(pos);
                     //gridTiles[newGridPos] = tile;
                 }
             }
         }
 
+
+        //Dictionary<GridPosition, GameObject> newGridTiles = new Dictionary<GridPosition, GameObject>();
+        //foreach (KeyValuePair<GridPosition, GameObject> kvp in gridTiles)
+        //{
+        //    GridPosition oldGridPos = kvp.Key;
+        //    GameObject tile = kvp.Value;
+        //    Vector3 newVectorPos = tile.transform.position;
+        //    GridPosition newGridPos = Vector3ToGridPosition(newVectorPos);
+        //    newGridTiles[newGridPos] = tile;
+        //    Debug.Log($"Tile originally at ({oldGridPos.row}, {oldGridPos.column}) updated to ({newGridPos.row}, {newGridPos.column})");
+        //}
+        //gridTiles = newGridTiles;
         
-        Dictionary<GridPosition, GameObject> newGridTiles = new Dictionary<GridPosition, GameObject>();
-        foreach (KeyValuePair<GridPosition, GameObject> kvp in gridTiles)
-        {
-            GridPosition oldGridPos = kvp.Key;
-            GameObject tile = kvp.Value;
-            Vector3 newVectorPos = tile.transform.position;
-            GridPosition newGridPos = Vector3ToGridPosition(newVectorPos);
-            newGridTiles[newGridPos] = tile;
-            Debug.Log($"Tile originally at ({oldGridPos.row}, {oldGridPos.column}) updated to ({newGridPos.row}, {newGridPos.column})");
-        }
-        gridTiles = newGridTiles;
-        
+    }
+
+    public void UpdateGridTiles(GridPosition oldTile, GridPosition newTile)
+    {
+        gridTiles = gridTiles
+            .Select(kvp => new KeyValuePair<GridPosition, GameObject>(kvp.Key == newTile ? oldTile : kvp.Key, kvp.Value))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
     public bool HasTile(int x, int y)
