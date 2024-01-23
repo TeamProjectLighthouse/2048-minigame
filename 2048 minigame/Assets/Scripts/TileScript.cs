@@ -14,6 +14,8 @@ public class TileScript : MonoBehaviour
     GridManagerScript.GridPosition gridCoords;
     GridManagerScript gridScript;
 
+    public bool locked;
+
     void Start()
     {
         grid = GameObject.Find("Grid Manager");
@@ -36,22 +38,39 @@ public class TileScript : MonoBehaviour
         spriteRenderer.sprite = tileSpriteList[spriteValue-1];
     }
 
-    public GridManagerScript.GridPosition MoveTile(GridManagerScript.GridPosition tile, GridManagerScript.Direction direction)
+    public bool MoveTile(GridManagerScript.GridPosition tile, GridManagerScript.Direction direction)
     {
         GridManagerScript.GridPosition oldTile = new GridManagerScript.GridPosition(tile.row, tile.column);
         GridManagerScript.GridPosition newTile = UpdateTilePos(tile, direction);
-
-        StartCoroutine(Animate(gridScript.GridPositionToVector3(newTile)));
+        
+        StartCoroutine(Animate(gridScript.GridPositionToVector3(newTile), false));
 
         gridScript.UpdateGridTiles(newTile, oldTile);
 
         Debug.Log($"Moved tile from ({oldTile.row},{oldTile.column}) to ({newTile.row},{newTile.column})");
 
-        return newTile;
+        GameObject adjacentTile = GetAdjacentCell(newTile, direction);
+        TileScript adjacentScript = adjacentTile.GetComponent<TileScript>();
+
+        if (!(adjacentTile == null))
+        {
+            if (gridScript.gridValues[adjacentTile] == gridScript.gridValues[gameObject] && !adjacentScript.locked)
+            {
+                Merge(gameObject, adjacentTile);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private GridManagerScript.GridPosition UpdateTilePos(GridManagerScript.GridPosition newTile, GridManagerScript.Direction direction)
     {
+        GameObject adjacentTile = GetAdjacentCell(newTile, direction);
+        TileScript adjacentScript = adjacentTile.GetComponent<TileScript>();
+
+        //GridManagerScript.GridPosition adjacentPos = gridScript.gridTiles.FirstOrDefault(x => x.Value == adjacentTile).Key;
+
         GridManagerScript.GridPosition lastCheckedTile = new GridManagerScript.GridPosition(newTile.row, newTile.column);
         MoveTileInGridTile(newTile, direction);
 
@@ -92,7 +111,7 @@ public class TileScript : MonoBehaviour
         }
     }
 
-    private IEnumerator Animate(Vector3 to)
+    private IEnumerator Animate(Vector3 to, bool merging)
     {
         float elapsed = 0f;
         float duration = 0.1f;
@@ -107,5 +126,54 @@ public class TileScript : MonoBehaviour
         }
 
         transform.position = to;
+
+        if (merging)
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private GameObject GetAdjacentCell(GridManagerScript.GridPosition tile, GridManagerScript.Direction direction)
+    {
+        GridManagerScript.GridPosition adjacent = new GridManagerScript.GridPosition(tile.row, tile.column);
+
+        if (direction == GridManagerScript.Direction.Up)
+        {
+            adjacent.row -= 1;
+        }
+        else if (direction == GridManagerScript.Direction.Down)
+        {
+            adjacent.row += 1;
+        }
+        else if (direction == GridManagerScript.Direction.Left)
+        {
+            adjacent.column -= 1;
+        }
+        else if (direction == GridManagerScript.Direction.Right)
+        {
+            adjacent.column += 1;
+        }
+        else
+        {
+            return null; // won't happen
+        }
+
+        return gridScript.gridTiles[adjacent];
+    }
+
+    private void Merge(GameObject a, GameObject b)
+    {
+        GridManagerScript.GridPosition aPos = gridScript.gridTiles.FirstOrDefault(x => x.Value == a).Key;
+        GridManagerScript.GridPosition bPos = gridScript.gridTiles.FirstOrDefault(x => x.Value == b).Key;
+
+        TileScript aScript = a.GetComponent<TileScript>();
+        TileScript bScript = b.GetComponent<TileScript>();
+
+        gridScript.gridTiles.Remove(aPos);
+        bScript.locked = true;
+        gridScript.gridValues[b] = 2;
+        bScript.UpdateSprite(2);
+
+        StartCoroutine(Animate(gridScript.GridPositionToVector3(bPos), true));
     }
 }

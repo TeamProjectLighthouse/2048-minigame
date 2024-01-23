@@ -69,25 +69,25 @@ public class GridManagerScript : MonoBehaviour
     }
     public GameObject tilePrefab;
     public GameObject tileTextureDatabasePrefab;
-    public Dictionary<GridPosition, int> gridValues = new Dictionary<GridPosition, int>();
+    public Dictionary<GameObject, int> gridValues = new Dictionary<GameObject, int>();
     public Dictionary<GridPosition, GameObject> gridTiles = new Dictionary<GridPosition, GameObject>();
 
 
-    private TileScript[] tiles;
 
     private void StartGame()
     {
-        GridPosition randomPos1 = new GridPosition(UnityEngine.Random.Range(1,4), UnityEngine.Random.Range(1,4));
-        GridPosition randomPos2 = new GridPosition(UnityEngine.Random.Range(1,4), UnityEngine.Random.Range(1,4));
-        while (randomPos1 == randomPos2)
+        InstantiateTile(1);
+        InstantiateTile(1);
+    }
+
+    public GridPosition GetRandomGridPosition()
+    {
+        GridPosition randomPos = new GridPosition(UnityEngine.Random.Range(1, 4), UnityEngine.Random.Range(1, 4));
+        while (HasTile(randomPos.row,randomPos.column))
         {
-            randomPos2 = new GridPosition(UnityEngine.Random.Range(1,4), UnityEngine.Random.Range(1,4));
+            randomPos = new GridPosition(UnityEngine.Random.Range(1, 4), UnityEngine.Random.Range(1, 4));
         }
-
-        InstantiateTile(randomPos1, 1);
-        InstantiateTile(randomPos2, 1);
-
-        tiles = GetComponents<TileScript>();
+        return randomPos;
     }
 
     public Vector3 GridPositionToVector3(GridPosition pos)
@@ -109,10 +109,11 @@ public class GridManagerScript : MonoBehaviour
         return finalPos;
     }
 
-    private void InstantiateTile(GridPosition pos, int spriteValue)
+    private void InstantiateTile(int spriteValue)
     {
-        gridValues[pos] = spriteValue;
+        GridPosition pos = GetRandomGridPosition();
         GameObject newTile = Instantiate(tilePrefab);
+        gridValues[newTile] = spriteValue;
         TileScript newTileScript = newTile.GetComponent<TileScript>();
         newTileScript.Initiation();
         gridTiles[pos] = newTile;
@@ -176,8 +177,9 @@ public class GridManagerScript : MonoBehaviour
                 Debug.LogError("key press direction is broken HELP AHHHHHHH");
                 return Direction.None;
             }
+
         }
-        //Debug.Log("none");
+
         return Direction.None;
     }
 
@@ -189,6 +191,8 @@ public class GridManagerScript : MonoBehaviour
         //    x.GetComponent<TileScript>().Merge(direction);
         //}
 
+        bool changed = false;
+
         for (int x = startRow; x >= 1 && x <= 4; x += incrementRow)
         {
             for (int y = startColumn; y >= 1 && y <= 4; y += incrementColumn)
@@ -199,7 +203,7 @@ public class GridManagerScript : MonoBehaviour
                     GridPosition pos = new GridPosition(x, y);
                     TileScript script = tile.GetComponent<TileScript>();
                     Debug.Log($"Moving tile at ({pos.GetGridPosition()[0]}, {pos.GetGridPosition()[1]}) in {direction} direction");
-                    script.MoveTile(pos, direction);
+                    changed |= script.MoveTile(pos, direction);
                     //Debug.Log($"{newGridPos.row}, {newGridPos.column}");
                     //gridTiles.Remove(pos);
                     //gridTiles[newGridPos] = tile;
@@ -207,6 +211,22 @@ public class GridManagerScript : MonoBehaviour
             }
         }
 
+        if (changed)
+        {
+            for (int x = startRow; x >= 1 && x <= 4; x += incrementRow)
+            {
+                for (int y = startColumn; y >= 1 && y <= 4; y += incrementColumn)
+                {
+                    if (HasTile(x, y))
+                    {
+                        GameObject tile = GetTile(x, y);
+                        tile.GetComponent<TileScript>().locked = false;
+                    }
+                }
+            }
+        }
+
+        InstantiateTile(1);
 
         //Dictionary<GridPosition, GameObject> newGridTiles = new Dictionary<GridPosition, GameObject>();
         //foreach (KeyValuePair<GridPosition, GameObject> kvp in gridTiles)
@@ -219,7 +239,7 @@ public class GridManagerScript : MonoBehaviour
         //    Debug.Log($"Tile originally at ({oldGridPos.row}, {oldGridPos.column}) updated to ({newGridPos.row}, {newGridPos.column})");
         //}
         //gridTiles = newGridTiles;
-        
+
     }
 
     public void UpdateGridTiles(GridPosition oldTile, GridPosition newTile)
