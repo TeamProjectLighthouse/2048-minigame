@@ -76,7 +76,7 @@ public class TileScript : MonoBehaviour
         return finalPosition - moveDirection;
     }
 
-    public void MergeTile(Vector3 moveDirection)
+    public bool MergeTile(Vector3 moveDirection)
     {
         Vector3 posToCheck = posAfterMoving + moveDirection;
         GameObject tileToMerge = FindTileWithPos(posToCheck);
@@ -95,8 +95,10 @@ public class TileScript : MonoBehaviour
                 tileValue += 1;
                 UpdateSprite(tileValue);
                 alreadyMergedThisMove = true;
+                return true;
             }
         }
+        return false;
     }
 
     public GameObject FindTileWithPos(Vector3 pos)
@@ -132,6 +134,7 @@ public class TileScript : MonoBehaviour
     {
         return pos.x > 4 || pos.x < 1 || -pos.y > 4 || -pos.y < 1;
     }
+
     void Start()
     {
 

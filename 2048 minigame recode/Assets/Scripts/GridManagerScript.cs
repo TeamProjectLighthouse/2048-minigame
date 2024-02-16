@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static System.Math;
 using System;
-
+using TMPro;
 
 
 public class GridManagerScript : MonoBehaviour
@@ -14,8 +14,21 @@ public class GridManagerScript : MonoBehaviour
     public GameObject tileTextureDatabasePrefab;
     public List<GameObject> tileList;
 
+    private int score;
+    public TextMeshProUGUI scoreText;
+
+    public Canvas deathScreen;
+
+    public Canvas startGameScreen;
+
+    private bool gameHasStarted;
+
+    public GameObject grid;
+    public Sprite tempGrid;
+
     private void StartGame()
     {
+        grid.GetComponent<SpriteRenderer>().sprite = tempGrid;
         List<int> randomPos1 = new List<int>();
         randomPos1.Add(UnityEngine.Random.Range(1,4));
         randomPos1.Add(UnityEngine.Random.Range(1,4));
@@ -29,20 +42,8 @@ public class GridManagerScript : MonoBehaviour
             randomPos2.Add(UnityEngine.Random.Range(1,4));
         }
 
-        //InstantiateTile(randomPos1, 1);
-        //InstantiateTile(randomPos2, 1);
-        List<int> pos1 = new List<int>();
-        List<int> pos2 = new List<int>();
-        List<int> pos3 = new List<int>  ();
-        pos1.Add(1);
-        pos2.Add(1);
-        pos3.Add(1);
-        pos1.Add(1);
-        pos2.Add(2);
-        pos3.Add(3);
-        InstantiateTile(pos1, 1);
-        InstantiateTile(pos2, 1);
-        InstantiateTile(pos3, 1);
+        InstantiateTile(randomPos1, 1);
+        InstantiateTile(randomPos2, 1);
     }
 
     private Vector3 GridPositionToVector3(List<int> pos)
@@ -205,7 +206,7 @@ public class GridManagerScript : MonoBehaviour
     {
         bool gridHasChanged = false;
         List<GameObject> copyTileList = new List<GameObject>();
-        foreach (GameObject tile in tileList) //deepcopying tileList to copyTileList so tile can be removed from tileList in the loop below
+        foreach (GameObject tile in tileList) //deepcopying tileList to copyTileList so tiles can be removed from tileList in the loop below
         {
             copyTileList.Add(tile);
         }
@@ -270,7 +271,11 @@ public class GridManagerScript : MonoBehaviour
                 GameObject tile = tilePriority[priority];
                 TileScript script = tile.GetComponent<TileScript>();
                 if (script != null) {
-                    script.MergeTile(directionVector3);
+                    if (script.MergeTile(directionVector3))
+                    {
+                        score += (int)Math.Pow(2, script.tileValue);
+                    }
+                    
                 }
             }
 
@@ -292,18 +297,96 @@ public class GridManagerScript : MonoBehaviour
         return tilePriority;
     }
 
+    private bool HasValidMoves()
+    {
+        bool gridIsFull = (tileList.Count == 16);
+        if (!gridIsFull)
+        {
+            return true;
+        }
+
+        foreach (GameObject tile in tileList)
+        {
+            TileScript tileScript = tile.GetComponent<TileScript>();
+            if (tileScript != null)
+            {
+                foreach (GameObject otherTile in tileList)
+                {
+                    int distanceX = (int)Mathf.Abs(tile.transform.position.x - otherTile.transform.position.x);
+                    int distanceY = (int)Mathf.Abs(tile.transform.position.y - otherTile.transform.position.y);
+
+                    bool isOrthogonallyConnected = (distanceX == 1 && distanceY == 0) || (distanceX == 0 && distanceY == 1);
+                    if (isOrthogonallyConnected)
+                    {
+                        TileScript otherTileScript = otherTile.GetComponent<TileScript>();
+                        if (otherTileScript != null)
+                        {
+                            if (tileScript.tileValue == otherTileScript.tileValue)
+                            {
+                                //Debug.Log($"Has valid moves with tiles at {tile.transform.position} and {otherTile.transform.position}.");
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        Debug.Log("no valid moves D:");
+        return false;
+    }
+
+    private void DisplayDeathScreen()
+    {
+        TextMeshProUGUI deathText = deathScreen.GetComponentInChildren<TextMeshProUGUI>();
+        if (deathText != null)
+        {
+
+            deathText.text = "Game Over (add UI here)";
+        } else {
+            Debug.Log("deathtext is null");
+        }
+    }
+
+    private void SetupScore()
+    {
+        score = 0;
+        scoreText.text = "Score: " + score;
+    }
+
+
+
     void Start()
     {
-        StartGame();
+        gameHasStarted = false;
     }
 
     void Update()
     {
-        Direction inputDirection = DetectInput();
-        if (inputDirection != Direction.None)
+
+        if (gameHasStarted)
         {
-            UpdateGrid(inputDirection);
+            Direction inputDirection = DetectInput();
+            if (inputDirection != Direction.None && HasValidMoves())
+            {
+                UpdateGrid(inputDirection);
+                scoreText.text = "Score: " + score;
+                if (!HasValidMoves())
+                {
+                    Debug.LogWarning("YOU ARE DIE!");
+                    DisplayDeathScreen();
+                }
+            }
+        } else {
+            if (Input.GetMouseButtonDown(0))
+            {
+                startGameScreen.enabled = false;
+                gameHasStarted = true;
+                StartGame();
+
+            }
         }
+
     }
 
 
