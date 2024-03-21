@@ -4,6 +4,7 @@ using UnityEngine;
 using static System.Math;
 using System;
 using TMPro;
+using UnityEditor;
 
 
 public class GridManagerScript : MonoBehaviour
@@ -16,6 +17,7 @@ public class GridManagerScript : MonoBehaviour
 
     private int score;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI bestScoreText;
 
     public Canvas deathScreen;
 
@@ -338,20 +340,30 @@ public class GridManagerScript : MonoBehaviour
 
     private void DisplayDeathScreen()
     {
-        TextMeshProUGUI deathText = deathScreen.GetComponentInChildren<TextMeshProUGUI>();
-        if (deathText != null)
+        deathScreen.enabled = true;
+        var bestScore = PlayerPrefs.GetInt("highscore", 0);
+        if (score > bestScore)
         {
-
-            deathText.text = "Game Over (add UI here)";
-        } else {
-            Debug.Log("deathtext is null");
+            PlayerPrefs.SetInt("highscore", score);
         }
+        if (Input.GetMouseButtonDown(0))
+        {
+            EditorApplication.isPlaying = false;
+        }
+        //TextMeshProUGUI deathText = deathScreen.GetComponentInChildren<TextMeshProUGUI>();
+        //if (deathText != null)
+        //{
+
+        //    deathText.text = "Game Over (add UI here)";
+        //} else {
+        //    Debug.Log("deathtext is null");
+        //}
     }
 
     private void SetupScore()
     {
         score = 0;
-        scoreText.text = "Score: " + score;
+        scoreText.text = score.ToString();
     }
 
 
@@ -359,6 +371,8 @@ public class GridManagerScript : MonoBehaviour
     void Start()
     {
         gameHasStarted = false;
+        deathScreen.enabled = false;
+        bestScoreText.text = PlayerPrefs.GetInt("highscore", 0).ToString();
     }
 
     void Update()
@@ -366,17 +380,26 @@ public class GridManagerScript : MonoBehaviour
 
         if (gameHasStarted)
         {
-            Direction inputDirection = DetectInput();
-            if (inputDirection != Direction.None && HasValidMoves())
+            if (!HasValidMoves())
             {
-                UpdateGrid(inputDirection);
-                scoreText.text = "Score: " + score;
-                if (!HasValidMoves())
+                Debug.LogWarning("YOU ARE DIE!");
+                DisplayDeathScreen();
+            }
+            else
+            {
+                Direction inputDirection = DetectInput();
+                if (inputDirection != Direction.None && HasValidMoves())
                 {
-                    Debug.LogWarning("YOU ARE DIE!");
-                    DisplayDeathScreen();
+                    UpdateGrid(inputDirection);
+                    scoreText.text = score.ToString();
+                    if (!HasValidMoves())
+                    {
+                        Debug.LogWarning("YOU ARE DIE!");
+                        DisplayDeathScreen();
+                    }
                 }
             }
+
         } else {
             if (Input.GetMouseButtonDown(0))
             {
@@ -384,6 +407,11 @@ public class GridManagerScript : MonoBehaviour
                 gameHasStarted = true;
                 StartGame();
 
+            }
+            if (!HasValidMoves())
+            {
+                Debug.LogWarning("YOU ARE DIE!");
+                DisplayDeathScreen();
             }
         }
 

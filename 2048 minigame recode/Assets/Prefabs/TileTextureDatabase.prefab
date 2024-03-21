@@ -44,14 +44,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 449164f26c8ea1740bd4e4e509f31dff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tile2: {fileID: 21300000, guid: 3e04e45536dbde74687adf4980544477, type: 3}
-  tile4: {fileID: 21300000, guid: c4fcf8a84fa7f334d8f97f2e69ca21bc, type: 3}
-  tile8: {fileID: 21300000, guid: 5ceebaa1f9b4d704eb83dcff01fe44da, type: 3}
-  tile16: {fileID: 21300000, guid: f4267085ca82b144995c1cb69ef18bbf, type: 3}
-  tile32: {fileID: 21300000, guid: cf1ef173de4eeac4d89aeb07de8f8777, type: 3}
-  tile64: {fileID: 21300000, guid: 02511a8f656cb4749bec87ae9c7296c0, type: 3}
-  tile128: {fileID: 21300000, guid: 0123a4fb2070d5a49a9aa7fbdf7bec1a, type: 3}
-  tile256: {fileID: 21300000, guid: 24868d560167ce2448395ec36bca77bf, type: 3}
-  tile512: {fileID: 21300000, guid: 24c0eefd59abe5240bace5eca018dc38, type: 3}
-  tile1024: {fileID: 21300000, guid: 0c59a363d09d9e64ebc0fd3dadf1d5c3, type: 3}
-  tile2048: {fileID: 21300000, guid: b4a6843ffcba1664a99c73671a983489, type: 3}
+  tile2: {fileID: 21300000, guid: 5a61bcd5fb873419e81fbb9f0b9389fb, type: 3}
+  tile4: {fileID: 21300000, guid: 6a70fab029d644f58b1c0a6fdc8b5adb, type: 3}
+  tile8: {fileID: 21300000, guid: 083e9c4e12e504062ba55ac60ec584f3, type: 3}
+  tile16: {fileID: 21300000, guid: 613f8d1c4e5c241cdacbc4164e775afa, type: 3}
+  tile32: {fileID: 21300000, guid: f15dd3ca9f2344617b4afac57d7041f6, type: 3}
+  tile64: {fileID: 21300000, guid: bfd3546f9f6ad41009555f34ab527b3c, type: 3}
+  tile128: {fileID: 21300000, guid: cb5b3cdd1625d47dfa998320a4ad2caf, type: 3}
+  tile256: {fileID: 21300000, guid: ecf95d4a3eb63465983f7a4a21e5c61b, type: 3}
+  tile512: {fileID: 21300000, guid: 0348cebd0a7bb4e07a4610f9238b6458, type: 3}
+  tile1024: {fileID: 21300000, guid: d86c94fb7fbb84bc9bdf7518a42b041c, type: 3}
+  tile2048: {fileID: 21300000, guid: cb907d35926964329b262ecafadb64a6, type: 3}
