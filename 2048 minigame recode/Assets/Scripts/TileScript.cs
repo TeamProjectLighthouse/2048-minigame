@@ -17,6 +17,12 @@ public class TileScript : MonoBehaviour
     public bool isDeletedNextFrame = false;
     public bool alreadyMergedThisMove = false;
     public int tileValue;
+
+    private Vector3 movementStart;
+    private Vector3 movementEnd;
+    private bool moving = false;
+    private float movementStartTime;
+    private float movementTime = 0.15f;
     public void Initiation()
     {
         gridManager = GameObject.Find("Grid Manager");
@@ -50,7 +56,13 @@ public class TileScript : MonoBehaviour
 
     public void Move(Vector3 finalPos)
     {
-        transform.position = finalPos;
+        
+        movementStart = new Vector3 (transform.position.x, transform.position.y, transform.position.z);
+        movementEnd = new Vector3 (finalPos.x, finalPos.y, finalPos.z);
+        movementStartTime = Time.time;
+        moving = true;
+        
+        //transform.position = finalPos;
     }
 
     public Vector3 FindPosToMove(Vector3 moveDirection)
@@ -135,8 +147,31 @@ public class TileScript : MonoBehaviour
         return pos.x > 4 || pos.x < 1 || -pos.y > 4 || -pos.y < 1;
     }
 
+    public void AlignMovement ()
+    {
+        transform.position = movementEnd;
+        moving = false;
+    }
+
     void Start()
     {
-
+        movementStart = transform.position;
+        movementEnd = transform.position;
     }  
+
+    void Update()
+    {
+        
+        if (moving) {
+            float fractionOfJourney = (Time.time - movementStartTime)/movementTime;
+            if (fractionOfJourney >= 1) {
+                transform.position = movementEnd;
+                moving = false;
+            } else {
+                transform.position = Vector3.Lerp(movementStart, movementEnd, fractionOfJourney);
+            }
+
+        }
+        
+    }
 }

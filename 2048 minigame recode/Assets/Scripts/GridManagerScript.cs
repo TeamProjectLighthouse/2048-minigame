@@ -28,6 +28,8 @@ public class GridManagerScript : MonoBehaviour
     public GameObject grid;
     public Sprite tempGrid;
 
+    private float cooldownBetweenMove;
+
     private void StartGame()
     {
         grid.GetComponent<SpriteRenderer>().sprite = tempGrid;
@@ -154,7 +156,11 @@ public class GridManagerScript : MonoBehaviour
 
         foreach (GameObject tile in tileList)
         {
-            tile.GetComponent<TileScript>().posAfterMoving = tile.transform.position;
+            TileScript tileScript = tile.GetComponent<TileScript>();
+            if (tileScript != null) {
+                tileScript.AlignMovement();
+                tileScript.posAfterMoving = tile.transform.position;
+            }
         }
 
         CompressTiles(direction);
@@ -187,7 +193,7 @@ public class GridManagerScript : MonoBehaviour
 
         foreach (GameObject tile in tileList)
         {
-            availablePos.Remove(tile.transform.position);
+            availablePos.Remove(tile.GetComponent<TileScript>().posAfterMoving);
         }
 
         Vector3 randomPos = availablePos[UnityEngine.Random.Range(1, availablePos.Count)-1];
@@ -368,11 +374,14 @@ public class GridManagerScript : MonoBehaviour
 
 
 
+
+
     void Start()
     {
         gameHasStarted = false;
         deathScreen.enabled = false;
         bestScoreText.text = PlayerPrefs.GetInt("highscore", 0).ToString();
+        cooldownBetweenMove = 0.2f;
     }
 
     void Update()
@@ -390,6 +399,7 @@ public class GridManagerScript : MonoBehaviour
                 Direction inputDirection = DetectInput();
                 if (inputDirection != Direction.None && HasValidMoves())
                 {
+                    
                     UpdateGrid(inputDirection);
                     scoreText.text = score.ToString();
                     if (!HasValidMoves())
