@@ -19,7 +19,7 @@ public class GridManagerScript : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI bestScoreText;
 
-    public Canvas deathScreen;
+    public GameObject deathScreen;
 
     public Canvas startGameScreen;
 
@@ -28,7 +28,12 @@ public class GridManagerScript : MonoBehaviour
     public GameObject grid;
     public Sprite tempGrid;
 
-    private float cooldownBetweenMove;
+    public GameObject background;
+
+    private bool end;
+    private bool console = false;
+
+    //private float cooldownBetweenMove;
 
     private void StartGame()
     {
@@ -73,7 +78,7 @@ public class GridManagerScript : MonoBehaviour
         newTileScript.posAfterMoving = newTile.transform.position;
         newTileScript.UpdateSprite(spriteValue);
         newTile.transform.position = GridPositionToVector3(pos);
-        Debug.Log($"New tile with value of {(int)Pow(2, spriteValue)} (spriteValue of {spriteValue}) instantiated at {newTile.transform.position} (Grid Position: {pos[0]}, {pos[1]})");
+        if (console) { Debug.Log($"New tile with value of {(int)Pow(2, spriteValue)} (spriteValue of {spriteValue}) instantiated at {newTile.transform.position} (Grid Position: {pos[0]}, {pos[1]})");}
     }
 
     public enum Direction
@@ -112,23 +117,23 @@ public class GridManagerScript : MonoBehaviour
         {
             if (upPressed)
             {
-                Debug.Log("up");
+                if (console) { Debug.Log("up"); }
                 return Direction.Up;
                 
             } else if (downPressed) {
-                Debug.Log("down");
+                if (console) { Debug.Log("down"); }
                 return Direction.Down;
                 
             } else if (leftPressed) {
-                Debug.Log("left");
+                if (console) { Debug.Log("left"); }
                 return Direction.Left;
                 
             } else if (rightPressed) {
-                Debug.Log("right");
+                if (console) { Debug.Log("right"); }
                 return Direction.Right;
                 
             } else {
-                Debug.LogError("key press direction is broken HELP AHHHHHHH");
+                if (console) { Debug.Log("key press direction is broken HELP AHHHHHHH"); }
                 return Direction.None;
             }
         }
@@ -340,13 +345,25 @@ public class GridManagerScript : MonoBehaviour
 
             }
         }
-        Debug.Log("no valid moves D:");
+        if (console) { Debug.Log("no valid moves D:"); }
         return false;
     }
 
-    private void DisplayDeathScreen()
+    IEnumerator DisplayDeathScreen()
     {
-        deathScreen.enabled = true;
+        end = true;
+        yield return new WaitForSeconds(2f);
+        var colour = deathScreen.GetComponent<Renderer>().material.color;
+        colour.a = 0f;
+        deathScreen.SetActive(true);
+        colour.a = Mathf.Lerp(0f, 1f, 0.5f);
+        TextMeshProUGUI newScoreText = Instantiate(scoreText, new Vector3(92.7f, -180.69f), Quaternion.identity, GameObject.Find("Score Text").transform);
+        TextMeshProUGUI newBestScoreText = Instantiate(bestScoreText, new Vector3(92.7f, -220.7f), Quaternion.identity, GameObject.Find("Score Text").transform);
+        newScoreText.GetComponent<RectTransform>().localPosition = new Vector3(92.7f, -180.69f);
+        newBestScoreText.GetComponent<RectTransform>().localPosition = new Vector3(92.7f, -220.7f);
+        newScoreText.color = new Color32(39, 39, 39, 255);
+        newBestScoreText.color = new Color32(39, 39, 39, 255);
+
         var bestScore = PlayerPrefs.GetInt("highscore", 0);
         if (score > bestScore)
         {
@@ -378,10 +395,17 @@ public class GridManagerScript : MonoBehaviour
 
     void Start()
     {
+        startGameScreen.enabled = true;
+        end = false;
         gameHasStarted = false;
-        deathScreen.enabled = false;
+        deathScreen.SetActive(false);
+        background.SetActive(false);
+        scoreText.color = new Color32(255,255,255,255);
+        bestScoreText.color = new Color32(255, 255, 255, 255);
+        scoreText.GetComponent<RectTransform>().localPosition = new Vector3(63.6f, 334.2f);
+        bestScoreText.GetComponent<RectTransform>().localPosition = new Vector3(241f, 334.2f);
         bestScoreText.text = PlayerPrefs.GetInt("highscore", 0).ToString();
-        cooldownBetweenMove = 0.2f;
+        //cooldownBetweenMove = 0.2f;
     }
 
     void Update()
@@ -389,12 +413,7 @@ public class GridManagerScript : MonoBehaviour
 
         if (gameHasStarted)
         {
-            if (!HasValidMoves())
-            {
-                Debug.LogWarning("YOU ARE DIE!");
-                DisplayDeathScreen();
-            }
-            else
+            if (!end && HasValidMoves())
             {
                 Direction inputDirection = DetectInput();
                 if (inputDirection != Direction.None && HasValidMoves())
@@ -404,9 +423,15 @@ public class GridManagerScript : MonoBehaviour
                     scoreText.text = score.ToString();
                     if (!HasValidMoves())
                     {
-                        Debug.LogWarning("YOU ARE DIE!");
-                        DisplayDeathScreen();
+                        if (console) { Debug.LogWarning("YOU ARE DIE!"); }
+                        StartCoroutine(DisplayDeathScreen());
                     }
+                }
+                if (startGameScreen.enabled)
+                {
+                    scoreText.color = Color.white;
+                    bestScoreText.color = Color.white;
+                    startGameScreen.enabled = false;
                 }
             }
 
@@ -416,12 +441,8 @@ public class GridManagerScript : MonoBehaviour
                 startGameScreen.enabled = false;
                 gameHasStarted = true;
                 StartGame();
+                background.SetActive(true);
 
-            }
-            if (!HasValidMoves())
-            {
-                Debug.LogWarning("YOU ARE DIE!");
-                DisplayDeathScreen();
             }
         }
 

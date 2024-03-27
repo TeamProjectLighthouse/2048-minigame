@@ -73,7 +73,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -99,3 +99,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tileTextureDatabasePrefab: {fileID: 110272753616456149, guid: 7bac97ea39645454e83b04405761a630, type: 3}
   gridManager: {fileID: 0}
+  posAfterMoving: {x: 0, y: 0, z: 0}
+  isDeletedNextFrame: 0
+  alreadyMergedThisMove: 0
+  tileValue: 0
