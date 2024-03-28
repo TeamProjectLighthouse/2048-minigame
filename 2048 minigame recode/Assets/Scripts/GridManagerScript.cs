@@ -12,32 +12,38 @@ public class GridManagerScript : MonoBehaviour
 
 
     public GameObject tilePrefab;
-    public GameObject tileTextureDatabasePrefab;
+    //public GameObject tileTextureDatabasePrefab;
     public List<GameObject> tileList;
 
     private int score;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI bestScoreText;
 
+    private TextMeshProUGUI newScoreText;
+    private TextMeshProUGUI newBestScoreText;
+
     public GameObject deathScreen;
 
     public Canvas startGameScreen;
 
-    private bool gameHasStarted;
 
-    public GameObject grid;
-    public Sprite tempGrid;
+    private enum GameState
+    {
+        StartScreen,
+        InGame,
+        GameOver
+    }
+
+    private GameState gameState = GameState.StartScreen;
+
 
     public GameObject background;
 
-    private bool end;
     private bool console = false;
 
-    //private float cooldownBetweenMove;
 
     private void StartGame()
     {
-        grid.GetComponent<SpriteRenderer>().sprite = tempGrid;
         List<int> randomPos1 = new List<int>();
         randomPos1.Add(UnityEngine.Random.Range(1,4));
         randomPos1.Add(UnityEngine.Random.Range(1,4));
@@ -78,6 +84,7 @@ public class GridManagerScript : MonoBehaviour
         newTileScript.posAfterMoving = newTile.transform.position;
         newTileScript.UpdateSprite(spriteValue);
         newTile.transform.position = GridPositionToVector3(pos);
+        newTileScript.posAfterMoving = newTile.transform.position;
         if (console) { Debug.Log($"New tile with value of {(int)Pow(2, spriteValue)} (spriteValue of {spriteValue}) instantiated at {newTile.transform.position} (Grid Position: {pos[0]}, {pos[1]})");}
     }
 
@@ -325,19 +332,26 @@ public class GridManagerScript : MonoBehaviour
             {
                 foreach (GameObject otherTile in tileList)
                 {
-                    int distanceX = (int)Mathf.Abs(tile.transform.position.x - otherTile.transform.position.x);
-                    int distanceY = (int)Mathf.Abs(tile.transform.position.y - otherTile.transform.position.y);
+                    int distanceX = (int)Mathf.Abs(tileScript.posAfterMoving.x - otherTile.GetComponent<TileScript>().posAfterMoving.x);
+                    int distanceY = (int)Mathf.Abs(tileScript.posAfterMoving.y - otherTile.GetComponent<TileScript>().posAfterMoving.y);
 
                     bool isOrthogonallyConnected = (distanceX == 1 && distanceY == 0) || (distanceX == 0 && distanceY == 1);
                     if (isOrthogonallyConnected)
                     {
+                        
                         TileScript otherTileScript = otherTile.GetComponent<TileScript>();
                         if (otherTileScript != null)
                         {
+                            List<int> tileGridPos = Vector3ToGridPosition(tileScript.posAfterMoving);
+                            List<int> otherTileGridPos = Vector3ToGridPosition(otherTileScript.posAfterMoving);
                             if (tileScript.tileValue == otherTileScript.tileValue)
                             {
-                                //Debug.Log($"Has valid moves with tiles at {tile.transform.position} and {otherTile.transform.position}.");
+                                if (console) {
+
+                                    Debug.Log($"Has valid moves with tiles at ({tileGridPos[0]}, {tileGridPos[1]}) and ({otherTileGridPos[0]}, {otherTileGridPos[1]})."); 
+                                }
                                 return true;
+                            } else {
                             }
                         }
                     }
@@ -351,14 +365,14 @@ public class GridManagerScript : MonoBehaviour
 
     IEnumerator DisplayDeathScreen()
     {
-        end = true;
+        gameState = GameState.GameOver;
         yield return new WaitForSeconds(2f);
         var colour = deathScreen.GetComponent<Renderer>().material.color;
         colour.a = 0f;
         deathScreen.SetActive(true);
         colour.a = Mathf.Lerp(0f, 1f, 0.5f);
-        TextMeshProUGUI newScoreText = Instantiate(scoreText, new Vector3(92.7f, -180.69f), Quaternion.identity, GameObject.Find("Score Text").transform);
-        TextMeshProUGUI newBestScoreText = Instantiate(bestScoreText, new Vector3(92.7f, -220.7f), Quaternion.identity, GameObject.Find("Score Text").transform);
+        newScoreText = Instantiate(scoreText, new Vector3(92.7f, -180.69f), Quaternion.identity, GameObject.Find("Score Text").transform);
+        newBestScoreText = Instantiate(bestScoreText, new Vector3(92.7f, -220.7f), Quaternion.identity, GameObject.Find("Score Text").transform);
         newScoreText.GetComponent<RectTransform>().localPosition = new Vector3(92.7f, -180.69f);
         newBestScoreText.GetComponent<RectTransform>().localPosition = new Vector3(92.7f, -220.7f);
         newScoreText.color = new Color32(39, 39, 39, 255);
@@ -368,6 +382,7 @@ public class GridManagerScript : MonoBehaviour
         if (score > bestScore)
         {
             PlayerPrefs.SetInt("highscore", score);
+            bestScoreText.text = PlayerPrefs.GetInt("highscore", 0).ToString();
         }
         if (Input.GetMouseButtonDown(0))
         {
@@ -390,14 +405,27 @@ public class GridManagerScript : MonoBehaviour
     }
 
 
+    private void RestartGame()
+    {
+        foreach (GameObject tile in tileList)
+        {
+            Destroy(tile);
+        }
+        tileList = new List<GameObject>();
 
+        Destroy(newScoreText);
+        Destroy(newBestScoreText);
 
+        gameState = GameState.InGame;
+        score = 0;
+        deathScreen.SetActive(false);
+    
+        StartGame();
+    }
 
     void Start()
     {
         startGameScreen.enabled = true;
-        end = false;
-        gameHasStarted = false;
         deathScreen.SetActive(false);
         background.SetActive(false);
         scoreText.color = new Color32(255,255,255,255);
@@ -406,26 +434,41 @@ public class GridManagerScript : MonoBehaviour
         bestScoreText.GetComponent<RectTransform>().localPosition = new Vector3(241f, 334.2f);
         bestScoreText.text = PlayerPrefs.GetInt("highscore", 0).ToString();
         //cooldownBetweenMove = 0.2f;
+
     }
 
     void Update()
     {
-
-        if (gameHasStarted)
+        if (gameState == GameState.StartScreen)
         {
-            if (!end && HasValidMoves())
+            if (Input.GetMouseButtonDown(0))
             {
+                startGameScreen.enabled = false;
+                gameState = GameState.InGame;
+                StartGame();
+                background.SetActive(true);
+
+            }
+        } else if (gameState == GameState.InGame)
+        {
+            if (!HasValidMoves())
+            {
+                if (console) { Debug.LogWarning("YOU ARE DIE!"); }
+                StartCoroutine(DisplayDeathScreen());
+            } else {
                 Direction inputDirection = DetectInput();
-                if (inputDirection != Direction.None && HasValidMoves())
+                if (inputDirection != Direction.None)
                 {
                     
                     UpdateGrid(inputDirection);
                     scoreText.text = score.ToString();
-                    if (!HasValidMoves())
+                    int bestScore = PlayerPrefs.GetInt("highscore", 0);
+                    if (score > bestScore)
                     {
-                        if (console) { Debug.LogWarning("YOU ARE DIE!"); }
-                        StartCoroutine(DisplayDeathScreen());
+                        PlayerPrefs.SetInt("highscore", score);
+                        bestScoreText.text = PlayerPrefs.GetInt("highscore", 0).ToString();
                     }
+
                 }
                 if (startGameScreen.enabled)
                 {
@@ -434,15 +477,11 @@ public class GridManagerScript : MonoBehaviour
                     startGameScreen.enabled = false;
                 }
             }
-
-        } else {
+        } else if (gameState == GameState.GameOver)
+        {
             if (Input.GetMouseButtonDown(0))
             {
-                startGameScreen.enabled = false;
-                gameHasStarted = true;
-                StartGame();
-                background.SetActive(true);
-
+                RestartGame();
             }
         }
 

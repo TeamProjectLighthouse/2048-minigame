@@ -97,7 +97,7 @@ public class TileScript : MonoBehaviour
             TileScript targetTileScript = tileToMerge.GetComponent<TileScript>();
             if (targetTileScript == null)
             {
-                Debug.LogError("script of target tile in merge is null HELP AHHH");
+                Debug.LogError("script of target tile in merge is null HELP AHHH"); 
             }
             int targetTileValue = targetTileScript.tileValue;
             if (tileValue == targetTileValue && !targetTileScript.alreadyMergedThisMove)
